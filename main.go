@@ -26,6 +26,7 @@ func main() {
 	)
 
 	config, err := pgxpool.ParseConfig(connString)
+	config.HealthCheckPeriod = 10 * time.Minute
 
 	if err != nil {
 		panic(err)
