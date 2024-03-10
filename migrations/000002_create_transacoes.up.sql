@@ -4,5 +4,5 @@ CREATE TABLE transacoes (
     valor integer,
     tipo char(1),
     descricao varchar(10),
-    realizada_em timestamp
+    realizada_em char(27)
 );
