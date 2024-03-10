@@ -12,11 +12,11 @@ services:
       DATABASE_PASS: postgres
       DATABASE_PORT: 5432
       DATABASE_NAME: rinha
-      DATABASE_POOL: 10
+      DATABASE_POOL: 6
       PORT: 9997
       GIN_MODE: release
       GOGC: off
-      GOMEMLIMIT: 90MiB
+      GOMEMLIMIT: 95MiB
       GOMAXPROCS: 1
     network_mode: host
     depends_on:
