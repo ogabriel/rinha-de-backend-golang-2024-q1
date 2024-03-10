@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -177,7 +178,74 @@ func validFields(transacao *Transacao) bool {
 	return true
 }
 
+type ExtratoResponse struct {
+	Saldo             SaldoResponse             `json:"saldo"`
+	UltimasTransacoes []UltimaTransacaoResponse `json:"ultimas_transacoes"`
+}
+
+type SaldoResponse struct {
+	Total       int    `json:"total"`
+	Limite      int    `json:"limite"`
+	DataExtrato string `json:"data_extrato"`
+}
+
+type UltimaTransacaoResponse struct {
+	Valor       int    `json:"valor"`
+	Tipo        string `json:"tipo"`
+	Descricao   string `json:"descricao"`
+	RealizadaEm string `json:"realizada_em"`
+}
+
 func extrato(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+
+		if err != nil {
+			ctx.Status(http.StatusNotFound)
+			return
+		}
+
+		saldoResponse := SaldoResponse{}
+
+		conn, err := pool.Acquire(ctx)
+
+		if err != nil {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		defer conn.Release()
+
+		if err := conn.QueryRow(ctx, "SELECT saldo, limite FROM clientes WHERE id = $1", id).Scan(&saldoResponse.Total, &saldoResponse.Limite); err != nil {
+			conn.Release()
+			ctx.Status(http.StatusNotFound)
+			return
+		}
+
+		rows, err := conn.Query(ctx, "SELECT valor, tipo, descricao, realizada_em FROM transacoes WHERE cliente_id = $1 ORDER BY id DESC LIMIT 10", id)
+
+		conn.Release()
+
+		if err != nil {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		ultimasTransacoesResponse, err := pgx.CollectRows(rows, pgx.RowToStructByPos[UltimaTransacaoResponse])
+
+		if err != nil {
+			conn.Release()
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		saldoResponse.DataExtrato = time.Now().Format("2006-01-02T15:04:05.999999Z")
+
+		extratoResponse := ExtratoResponse{
+			Saldo:             saldoResponse,
+			UltimasTransacoes: ultimasTransacoesResponse,
+		}
+
+		ctx.JSON(http.StatusOK, extratoResponse)
 	}
 }
