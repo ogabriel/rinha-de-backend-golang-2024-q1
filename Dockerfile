@@ -22,7 +22,7 @@ RUN apk add --no-cache make postgresql-client
 COPY Makefile ./
 COPY docker-entrypoint.sh ./
 COPY migrations ./migrations/
-COPY --from=migrate /go/bin/migrate ./
+COPY --from=migrate /go/bin/migrate /bin
 COPY --from=builder /app/rinha-de-backend-golang ./
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
