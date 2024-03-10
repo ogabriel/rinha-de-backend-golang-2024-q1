@@ -83,7 +83,7 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
-		if err != nil {
+		if id < 1 || err != nil {
 			ctx.Status(http.StatusNotFound)
 			return
 		}
