@@ -15,12 +15,13 @@ import (
 
 func main() {
 	connString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable&pool_min_conns=%s&pool_max_conns=%[6]s",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable&pool_min_conns=%s&pool_max_conns=%s",
 		getEnv("DATABASE_USER"),
 		getEnv("DATABASE_PASS"),
 		getEnv("DATABASE_HOST"),
 		getEnv("DATABASE_PORT"),
 		getEnv("DATABASE_NAME"),
+		getEnv("DATABASE_POOL"),
 		getEnv("DATABASE_POOL"),
 	)
 
