@@ -75,7 +75,7 @@ type Transacao struct {
 }
 
 type TransacoesResponse struct {
-	Valor  int `json:"valor"`
+	Saldo  int `json:"saldo"`
 	Limite int `json:"limite"`
 }
 
@@ -153,7 +153,7 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		transacaoResponse := TransacoesResponse{
-			Valor:  novo_saldo,
+			Saldo:  novo_saldo,
 			Limite: limite,
 		}
 
