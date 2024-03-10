@@ -79,6 +79,22 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
+func validFields(transacao *Transacao) bool {
+	if transacao.Valor <= 0 {
+		return false
+	}
+
+	if transacao.Tipo != "c" && transacao.Tipo != "d" {
+		return false
+	}
+
+	if tamanhoDescricao := len(transacao.Descricao); tamanhoDescricao > 10 || tamanhoDescricao < 1 {
+		return false
+	}
+
+	return true
+}
+
 func extrato(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 	}
