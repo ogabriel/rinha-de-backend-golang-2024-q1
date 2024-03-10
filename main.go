@@ -106,8 +106,6 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		tx, err := pool.Begin(ctx)
 
-		defer tx.Rollback(ctx)
-
 		if err != nil {
 			ctx.Status(http.StatusUnprocessableEntity)
 			return
