@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -74,8 +74,90 @@ type Transacao struct {
 	RealizadaEm string `json:"realizada_em"`
 }
 
+type TransacoesResponse struct {
+	Valor  int `json:"valor"`
+	Limite int `json:"limite"`
+}
+
 func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+
+		if err != nil {
+			ctx.Status(http.StatusNotFound)
+			return
+		}
+
+		var transacao Transacao
+
+		if err := ctx.ShouldBindJSON(&transacao); err != nil {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		if !validFields(&transacao) {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		var credito_ou_debito int
+
+		if transacao.Tipo == "c" {
+			credito_ou_debito = transacao.Valor
+		} else {
+			credito_ou_debito = -transacao.Valor
+		}
+
+		realizada_em := time.Now().Format("2006-01-02T15:04:05.999999Z")
+
+		tx, err := pool.Begin(ctx)
+
+		defer tx.Rollback(ctx)
+
+		if err != nil {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		var saldo, limite int
+
+		if err := tx.QueryRow(ctx, "SELECT saldo, limite FROM clientes WHERE id = $1 FOR UPDATE", id).Scan(&saldo, &limite); err != nil {
+			tx.Rollback(ctx)
+			ctx.Status(http.StatusNotFound)
+			return
+		}
+
+		novo_saldo := saldo + credito_ou_debito
+
+		if novo_saldo < -limite {
+			tx.Rollback(ctx)
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		if _, err := tx.Exec(ctx, "INSERT INTO transacoes (valor, tipo, descricao, realizada_em, cliente_id) VALUES ($1, $2, $3, $4, $5)", transacao.Valor, transacao.Tipo, transacao.Descricao, realizada_em, id); err != nil {
+			tx.Rollback(ctx)
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		if _, err := tx.Exec(ctx, "UPDATE clientes SET saldo = $1 WHERE id = $2", novo_saldo, id); err != nil {
+			tx.Rollback(ctx)
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		if err := tx.Commit(ctx); err != nil {
+			ctx.Status(http.StatusUnprocessableEntity)
+			return
+		}
+
+		transacaoResponse := TransacoesResponse{
+			Valor:  novo_saldo,
+			Limite: limite,
+		}
+
+		ctx.JSON(http.StatusOK, transacaoResponse)
 	}
 }
 
