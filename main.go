@@ -62,12 +62,6 @@ func getEnv(envName string) string {
 	return env
 }
 
-type Cliente struct {
-	ID     int `json:"id"`
-	Saldo  int `json:"saldo"`
-	Limite int `json:"limite"`
-}
-
 type Transacao struct {
 	Valor       int    `json:"valor"`
 	Tipo        string `json:"tipo"`
