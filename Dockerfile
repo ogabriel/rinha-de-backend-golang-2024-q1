@@ -23,6 +23,6 @@ COPY Makefile ./
 COPY docker-entrypoint.sh ./
 COPY migrations ./migrations/
 COPY --from=migrate /go/bin/migrate /bin
-COPY --from=builder /app/rinha-de-backend-golang ./
+COPY --from=builder /app/rinha-de-backend-golang-2024-q1 ./
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
