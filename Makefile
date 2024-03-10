@@ -5,6 +5,12 @@ endif
 
 DATABASE_URL=postgres://$(DATABASE_USER):$(DATABASE_PASS)@$(DATABASE_HOST):$(DATABASE_PORT)
 
+run:
+	go run .
+
+run-release:
+	GIN_MODE=release go run .
+
 database-check:
 	until nc -z -v -w30 $(DATABASE_HOST) $(DATABASE_PORT); do \
 	  sleep 1; \
