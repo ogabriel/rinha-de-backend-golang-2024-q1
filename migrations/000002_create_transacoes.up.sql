@@ -6,3 +6,5 @@ CREATE TABLE transacoes (
     descricao varchar(10),
     realizada_em char(27)
 );
+
+CREATE INDEX ON transacoes (cliente_id);
