@@ -4,7 +4,7 @@ CREATE TABLE transacoes (
     valor integer,
     tipo char(1),
     descricao varchar(10),
-    realizada_em char(27)
+    realizada_em varchar(27)
 );
 
 CREATE INDEX ON transacoes (cliente_id);
