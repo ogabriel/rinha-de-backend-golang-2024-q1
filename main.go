@@ -109,8 +109,6 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 			credito_ou_debito = -transacao.Valor
 		}
 
-		realizada_em := time.Now().Format("2006-01-02T15:04:05.999999Z")
-
 		tx, err := pool.Begin(ctx)
 
 		defer tx.Rollback(ctx)
@@ -135,6 +133,8 @@ func transacoes(pool *pgxpool.Pool) gin.HandlerFunc {
 			ctx.Status(http.StatusUnprocessableEntity)
 			return
 		}
+
+		realizada_em := time.Now().Format("2006-01-02T15:04:05.999999Z")
 
 		if _, err := tx.Exec(ctx, "INSERT INTO transacoes (valor, tipo, descricao, realizada_em, cliente_id) VALUES ($1, $2, $3, $4, $5)", transacao.Valor, transacao.Tipo, transacao.Descricao, realizada_em, id); err != nil {
 			tx.Rollback(ctx)
