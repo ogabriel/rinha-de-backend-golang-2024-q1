@@ -13,11 +13,11 @@ services:
       DATABASE_PASS: postgres
       DATABASE_PORT: 5432
       DATABASE_NAME: rinha
-      DATABASE_POOL: 6
+      DATABASE_POOL: 2
       PORT: 9997
       GIN_MODE: release
       GOGC: off
-      GOMEMLIMIT: 95MiB
+      GOMEMLIMIT: 110MiB
       GOMAXPROCS: 1
     network_mode: host
     depends_on:
@@ -26,8 +26,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: '100MB'
+          cpus: '0.25'
+          memory: '120MB'
 
   app2:
     <<: *app1
@@ -51,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
+          cpus: '0.3'
           memory: '50MB'
 
   postgres:
@@ -68,4 +68,4 @@ services:
       resources:
         limits:
           cpus: '0.7'
-          memory: '300MB'
+          memory: '360MB'
